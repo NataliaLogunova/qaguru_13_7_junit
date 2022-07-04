@@ -2,10 +2,11 @@ package org.nataliya;
 
 import com.codeborne.selenide.Selenide;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvFileSource;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.*;
+import org.openqa.selenium.By;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
@@ -19,8 +20,7 @@ public class ParamsTest {
             "товары бренда {0}")
     void lamodaTestCommon(String testData) {
         Selenide.open("https://www.lamoda.ru");
-        $("#vue-root > header > div._3OaZdss3f-oo3UXtT_F9WA > div > div > div > div > input")
-                .setValue(testData);
+        $(By.xpath("//*[contains(@class, '_3jotUx9G5izzdWD5DIoPVO')]")).setValue(testData);
         $("button[type='button']").click();
         $$(".x-product-card-description").find(text(testData)).shouldBe(visible);
 
@@ -34,8 +34,7 @@ public class ParamsTest {
             "товары бренда {1}")
         void lamodaTestComplex(String searchData, String expectedResult) {
             Selenide.open("https://www.lamoda.ru");
-            $("#vue-root > header > div._3OaZdss3f-oo3UXtT_F9WA > div > div > div > div > input")
-                    .setValue(searchData);
+            $(By.xpath("//*[contains(@class, '_3jotUx9G5izzdWD5DIoPVO')]")).setValue(searchData);
             $("button[type='button']").click();
             $$(".x-product-card-description").find(text(expectedResult)).shouldBe(visible);
 
@@ -45,9 +44,26 @@ public class ParamsTest {
     @ParameterizedTest
     void enumTest(Gender gender) {
         Selenide.open("https://www.lamoda.ru");
-        $("#vue-root > header > div._3OaZdss3f-oo3UXtT_F9WA > div > div > div > div > input")
-                .setValue(gender.desc);
+        $(By.xpath("//*[contains(@class, '_3jotUx9G5izzdWD5DIoPVO')]")).setValue(gender.desc);
         $("button[type='button']").click();
         $$(".x-product-card-description").find(text(gender.desc)).shouldBe(visible);
+    }
+
+    static Stream<Arguments> lamodaTestVeryComplexDataProvider() {
+        return Stream.of(
+                Arguments.of("Marc Jacobs очки", List.of("Marc Jacobs очки", "солнцезащитные")),
+                Arguments.of("mango очки", List.of("mango очки", "солнцезащитные"))
+        );
+    }
+
+    @MethodSource(value = "lamodaTestVeryComplexDataProvider")
+    @ParameterizedTest (name = "При поиске на сайте Lamoda по запросу {0} в результатах отображаются\n" +
+            "товары бренда {1}")
+    void lamodaVeryTestComplex(String searchData, String expectedResult) {
+        Selenide.open("https://www.lamoda.ru");
+        $(By.xpath("//*[contains(@class, '_3jotUx9G5izzdWD5DIoPVO')]")).setValue(searchData);
+        $("button[type='button']").click();
+        $$(".x-product-card-description").find(text(expectedResult)).shouldBe(visible);
+
     }
 }
